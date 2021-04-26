@@ -1,14 +1,10 @@
-### A python wrapper to encode with MPEG G-PCC v12
+## A python wrapper to encode point clouds with MPEG G-PCC v12
 
-1. Installation
-Follow the building instructions of G-PCC. For Linux
-```
--mkdir build
--cd build
--cmake ..
--make
-```
+### Preliminaries
+1. Installing G-PCC (mpeg-pcc-tmc13) by following its README
 
 ### TODO
-1. add argparser to define input, codec, ouput directory, and parallel options
-2. V-PCC support
+- [x] + run on Windows 10
+- [x] add argparser to define input, codec, ouput directory
+- [ ] add parallel options
+- [ ] V-PCC support

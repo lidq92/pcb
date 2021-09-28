@@ -1,2 +1,2 @@
 #!/bin/bash 
-del "C:\Users\dell\Documents\GitHub\pcb\data\gpcc\*.log" "C:\Users\dell\Documents\GitHub\pcb\data\gpcc\*.bin"
+del "D:\Downloads\PCL\Datasets\PointXR\PointXR dataset-15\gpcc\*.log" "D:\Downloads\PCL\Datasets\PointXR\PointXR dataset-15\gpcc\*.bin" 

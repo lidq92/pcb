@@ -1,2 +1,1 @@
-# pcb
-Point cloud compression and benchmark
+# Point cloud compression (PCC)

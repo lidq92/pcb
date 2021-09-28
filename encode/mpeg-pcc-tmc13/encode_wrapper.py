@@ -8,9 +8,6 @@ Date: 09/28/2021
 
 import os
 import re
-import subprocess
-from pyntcloud import PyntCloud
-import numpy as np
 from glob import glob
 from argparse import ArgumentParser
 
@@ -23,7 +20,6 @@ def make_cfg(gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
         os.makedirs(output_dir)
     
     _, file_name = os.path.split(ref_path)
-    print(file_name)
     src_name = re.split('/|\.', file_name)[-2]
     recon_name = '{src}_g_{g}_c_{c}'.format(src=src_name, g=g, c=c)
     recon_path = os.path.join(output_dir, '{}.ply'.format(recon_name))
@@ -54,6 +50,9 @@ def make_cfg(gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
     rst.append('attrOffset: 0')
     rst.append('attrScale: 1') 
     rst.append('attribute: color')
+    rst.append('uncompressedDataPath: {}'.format(ref_path))
+    rst.append('reconstructedDataPath: {}'.format(recon_path))
+    rst.append('compressedStreamPath: {}'.format(bin_path))
 
     with open(cfg_path, 'w') as f:
         for line in rst:
@@ -81,12 +80,12 @@ if __name__ == "__main__":
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     gpcc_bin_path = os.path.abspath(os.path.join(dir_path, '../../mpeg-pcc-tmc13/build/tmc3/Release/tmc3.exe'))
-    ref_dir = 'D:\Downloads\PCL\Datasets\PointXR\PointXR dataset-15'
+    ref_dir = 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
     cfg_dir = os.path.abspath(os.path.join(dir_path, '../../cfg'))
-    codec = 'gpcc'
-    output_dir = 'D:\Downloads\PCL\Datasets\PointXR\PointXR dataset-15'
+    codec = 'octree-liftt-ctc-lossy-geom-lossy-attrs'
+    output_dir = 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
 
-    parser = ArgumentParser(description='PCC')
+    parser = ArgumentParser(description='G-PCC')
     parser.add_argument('--gpcc_bin_path', default=gpcc_bin_path, type=str,
                         help='')
     parser.add_argument('--ref_dir', default=ref_dir, type=str,
@@ -100,30 +99,30 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     
-    # seq_15 = []
-    # g_15 = [1.0, 1.0/512, 1.0/256, 1.0/64, 1.0/32, 1.0/8, 1.0/4]
+    # seq_15p = []
+    # g_15p = [1.0/512, 1.0/256, 1.0/64, 1.0/32, 1.0/8, 1.0/4]
 
     # seq_14 = []
-    # g_14 = [1.0, 1.0/256, 1.0/128, 1.0/64, 1.0/16, 1.0/8, 1.0/4]
+    # g_14 = [1.0/256, 1.0/128, 1.0/64, 1.0/16, 1.0/8, 1.0/4]
 
     # seq_13 = []
-    # g_13 = [1.0, 1.0/64, 1.0/32, 1.0/16, 1.0/8, 1.0/4, 1.0/2]
+    # g_13 = [1.0/64, 1.0/32, 1.0/16, 1.0/8, 1.0/4, 1.0/2]
 
     # seq_12 = []
-    # g_12 = [1.0, 1.0/32, 1.0/16, 1.0/8, 1.0/4, 1.0/2, 3.0/4]
+    # g_12 = [1.0/32, 1.0/16, 1.0/8, 1.0/4, 1.0/2, 3.0/4]
 
     # seq_11 = []
-    # g_11 = [1.0, 1.0/16, 1.0/8, 1.0/4, 1.0/2, 3.0/4, 7.0/8]
+    # g_11 = [1.0/16, 1.0/8, 1.0/4, 1.0/2, 3.0/4, 7.0/8]
 
-    seq_10 = glob(os.path.join(args.ref_dir, '**/*.ply'), recursive=True)
-    g_10 = [1.0, 1.0/8, 1.0/4, 1.0/2, 3.0/4, 7.0/8, 15.0/16]
+    seq_10 = glob(os.path.join(args.ref_dir, '*.ply'))
+    g_10 = [1.0/8, 1.0/4, 1.0/2, 3.0/4, 7.0/8, 15.0/16] #
 
     
-    c = [22, 28, 34, 40, 46, 51]
+    c = [22, 28, 34, 40, 46, 51] #
 
     cmd_all = []
-    # if len(seq_15) > 0:
-    #     cmd = process_one_depth(args.gpcc_bin_path, args.ref_dir, args.cfg_dir, args.output_dir, seq_15, g_15, c)
+    # if len(seq_15p) > 0:
+    #     cmd = process_one_depth(args.gpcc_bin_path, args.ref_dir, args.cfg_dir, args.output_dir, seq_15p, g_15p, c)
     #     cmd_all.extend(cmd)
     
     # if len(seq_14) > 0:
@@ -142,9 +141,9 @@ if __name__ == "__main__":
     #     cmd = process_one_depth(args.gpcc_bin_path, args.ref_dir, args.cfg_dir, args.output_dir, seq_11, g_11, c)
     #     cmd_all.extend(cmd)
     
+    print(len(seq_10))
     if len(seq_10) > 0:
         seq_10 = [os.path.split(path)[1] for path in seq_10]
-
         cmd = process_one_depth(args.gpcc_bin_path, args.ref_dir, args.cfg_dir, args.output_dir, seq_10, g_10, c)
         cmd_all.extend(cmd) 
 

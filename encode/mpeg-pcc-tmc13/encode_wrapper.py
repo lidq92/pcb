@@ -15,32 +15,6 @@ from glob import glob
 from argparse import ArgumentParser
 
 
-def process(path, vox=10, is_mesh=False):
-    pc_mesh = PyntCloud.from_file(path)
-    mesh = pc_mesh.mesh
-    coords = ['x', 'y', 'z']
-    pc_mesh.points[coords] = pc_mesh.points[coords].astype('float64', copy=False)
-    pc_mesh.mesh = mesh
-    if is_mesh:
-        pc = pc_mesh.get_sample("mesh_random", n=500000, as_PyntCloud=True)
-    else:
-        pc = pc_mesh
-    points = pc.points[coords].values
-    points = points - np.min(points, axis=0, keepdims=True)
-    points = points / np.max(points)
-    points = points * (2 ** vox - 1)
-    points = np.round(points)
-    # print(pc.points[coords])
-    # print(points)
-    pc.points[coords] = points
-    colors = ['red', 'green', 'blue']
-    other_scalars = list(set(pc.points.columns) - set(coords) - set(colors))
-    pc.points = pc.points.drop(columns=other_scalars)
-    pc.points[colors] = pc.points.groupby(by=coords).transform('mean').astype('uint8', copy=False)
-    pc.points = pc.points.drop_duplicates()
-    pc.to_file(path)
-
-
 def make_cfg(gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
 
     if not os.path.exists(cfg_dir):
@@ -169,8 +143,6 @@ if __name__ == "__main__":
     #     cmd_all.extend(cmd)
     
     if len(seq_10) > 0:
-        for path in seq_10:
-            process(path, vg_size=10)
         seq_10 = [os.path.split(path)[1] for path in seq_10]
 
         cmd = process_one_depth(args.gpcc_bin_path, args.ref_dir, args.cfg_dir, args.output_dir, seq_10, g_10, c)

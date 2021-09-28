@@ -79,11 +79,11 @@ def process_one_depth(gpcc_bin_path, ref_dir, cfg_dir, output_dir, seq, g, c):
 if __name__ == "__main__":
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    gpcc_bin_path = os.path.abspath(os.path.join(dir_path, '../../mpeg-pcc-tmc13/build/tmc3/Release/tmc3.exe'))
-    ref_dir = 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
+    gpcc_bin_path = os.path.abspath(os.path.join(dir_path, '../../mpeg-pcc-tmc13/build/tmc3/tmc3')) # '../../mpeg-pcc-tmc13/build/tmc3/Release/tmc3.exe'
+    ref_dir = '/userhome/Codes/RankPCQA/PointXR15' # '/mnt/d/Downloads/PCL/Datasets/pointcloud/PointXR/PointXR-dataset-15' # 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
     cfg_dir = os.path.abspath(os.path.join(dir_path, '../../cfg'))
     codec = 'octree-liftt-ctc-lossy-geom-lossy-attrs'
-    output_dir = 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
+    output_dir = '/userhome/Codes/RankPCQA/PointXR15' # '/mnt/d/Downloads/PCL/Datasets/pointcloud/PointXR/PointXR-dataset-15' # 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
 
     parser = ArgumentParser(description='G-PCC')
     parser.add_argument('--gpcc_bin_path', default=gpcc_bin_path, type=str,

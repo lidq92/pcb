@@ -5,8 +5,8 @@ Date: 04/22/2021
 Modified by Dingquan Li
 Date: 09/28/2021
 
-python encode_wrapper.py --codec octree-liftt-ctc-lossy-geom-lossy-attrs
 python encode_wrapper.py --codec octree-liftt-ctc-lossless-geom-lossy-attrs
+python encode_wrapper.py --codec octree-liftt-ctc-lossy-geom-lossy-attrs
 python encode_wrapper.py --codec octree-predt-ctc-lossless-geom-lossless-attrs
 python encode_wrapper.py --codec octree-predt-ctc-lossless-geom-nearlossless-attrs
 '''
@@ -86,10 +86,11 @@ def make_cfg(codec, gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
         else:
             rst.append('colourMatrix: 8')
     rst.append('attribute: color')
-    rst.append('sortInputByAzimuth: 0')
-    rst.append('geomTreeType: 1')
-    rst.append('predGeomSort: 2')
-    rst.append('predGeomAzimuthSortPrecision: 8')
+    if 'predgeom' in codec:
+        rst.append('sortInputByAzimuth: 0')
+        rst.append('geomTreeType: 1')
+        rst.append('predGeomSort: 2')
+        rst.append('predGeomAzimuthSortPrecision: 8')
     rst.append('uncompressedDataPath: {}'.format(ref_path))
     rst.append('reconstructedDataPath: {}'.format(recon_path))
     rst.append('compressedStreamPath: {}'.format(bin_path))
@@ -165,12 +166,12 @@ if __name__ == "__main__":
     g_10 = [1.0/8, 1.0/4, 1.0/2, 3.0/4, 7.0/8, 15.0/16] #
     
     if 'lossless-geom' in args.codec:
-        g_10 = [1.0]
-        # g_11 = [1.0]
-        # g_12 = [1.0]
-        # g_13 = [1.0]
-        # g_14 = [1.0]
-        # g_15 = [1.0]
+        g_10 = [1]
+        # g_11 = [1]
+        # g_12 = [1]
+        # g_13 = [1]
+        # g_14 = [1]
+        # g_15 = [1]
 
     if 'lossy-attrs' in args.codec:
         c = [22, 28, 34, 40, 46, 51] #

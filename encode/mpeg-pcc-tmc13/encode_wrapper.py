@@ -4,6 +4,11 @@ Author: Haiqiang Wang
 Date: 04/22/2021
 Modified by Dingquan Li
 Date: 09/28/2021
+
+python encode_wrapper.py --codec octree-liftt-ctc-lossy-geom-lossy-attrs
+python encode_wrapper.py --codec octree-liftt-ctc-lossless-geom-lossy-attrs
+python encode_wrapper.py --codec octree-predt-ctc-lossless-geom-lossless-attrs
+python encode_wrapper.py --codec octree-predt-ctc-lossless-geom-nearlossless-attrs
 '''
 
 import os
@@ -17,7 +22,7 @@ from glob import glob
 from argparse import ArgumentParser
 
 
-def make_cfg(gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
+def make_cfg(codec, gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
 
     if not os.path.exists(cfg_dir):
         os.makedirs(cfg_dir)
@@ -35,26 +40,56 @@ def make_cfg(gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
     rst = []
     rst.append('mode: 0')
     rst.append('trisoupNodeSizeLog2: 0')
-    rst.append('mergeDuplicatedPoints: 1')
+    if 'lossy-geom' in codec:
+        rst.append('mergeDuplicatedPoints: 1')
+    else:
+        rst.append('mergeDuplicatedPoints: 0')
     rst.append('neighbourAvailBoundaryLog2: 8')
     rst.append('intra_pred_max_node_size_log2: 6')
     rst.append('positionQuantizationScale: {}'.format(g))  #
+    if g==1:
+        rst.append('inferredDirectCodingMode: 1')
     rst.append('maxNumQtBtBeforeOt: 4')
     rst.append('minQtbtSizeLog2: 0')
     rst.append('planarEnabled: 1')
     rst.append('planarModeIdcmUse: 0')
-    rst.append('convertPlyColourspace: 1')
-    rst.append('transformType: 2')
+    if 'nearlossless-attrs' in codec:
+        rst.append('convertPlyColourspace: 0')
+    else:
+        rst.append('convertPlyColourspace: 1')
+    if 'predt' in codec:
+        rst.append('transformType: 1')
+    elif 'liftt' in codec:
+        rst.append('transformType: 2')
+    else: # raht
+        rst.append('transformType: 0')
     rst.append('numberOfNearestNeighborsInPrediction: 3')
     rst.append('levelOfDetailCount: 12')
-    rst.append('lodDecimator: 0')
+    if 'predt' in codec:
+        rst.append('intraLodPredictionSkipLayers: 0')
+        if 'nearlossless-attrs' in codec:
+            rst.append('interComponentPredictionEnabled: 1')
+            rst.append('predWeightBlending: 1')
+        else: # lossless-attrs
+            rst.append('interComponentPredictionEnabled: 0')
+    if 'liftt' in codec:
+        rst.append('lodDecimator: 0')
     rst.append('adaptivePredictionThreshold: 64')
     rst.append('qp: {}'.format(c)) #
     rst.append('qpChromaOffset: 0')
     rst.append('bitdepth: 8')
     rst.append('attrOffset: 0')
     rst.append('attrScale: 1') 
+    if 'predt' in codec:
+        if 'nearlossless-attrs' in codec:
+            rst.append('colourMatrix: 0')
+        else:
+            rst.append('colourMatrix: 8')
     rst.append('attribute: color')
+    rst.append('sortInputByAzimuth: 0')
+    rst.append('geomTreeType: 1')
+    rst.append('predGeomSort: 2')
+    rst.append('predGeomAzimuthSortPrecision: 8')
     rst.append('uncompressedDataPath: {}'.format(ref_path))
     rst.append('reconstructedDataPath: {}'.format(recon_path))
     rst.append('compressedStreamPath: {}'.format(bin_path))
@@ -69,13 +104,13 @@ def make_cfg(gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
     return cmd
 
 
-def process_one_depth(gpcc_bin_path, ref_dir, cfg_dir, output_dir, seq, g, c):
+def process_one_depth(codec, gpcc_bin_path, ref_dir, cfg_dir, output_dir, seq, g, c):
     cmd = []
     for _seq in seq:
         ref_path = os.path.join(ref_dir, _seq)
         for _g in g:
             for _c in c:
-                _cmd = make_cfg(gpcc_bin_path, ref_path, cfg_dir, output_dir, _g, _c)
+                _cmd = make_cfg(codec, gpcc_bin_path, ref_path, cfg_dir, output_dir, _g, _c)
                 cmd.append(_cmd)
 
     return cmd
@@ -92,22 +127,23 @@ if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.realpath(__file__))
     gpcc_bin_path = os.path.abspath(os.path.join(dir_path, '../../../mpeg-pcc-tmc13/build/tmc3/tmc3')) # '../../mpeg-pcc-tmc13/build/tmc3/Release/tmc3.exe'
     ref_dir = '/userhome/Codes/RankPCQA/PointXR15' # '/mnt/d/Downloads/PCL/Datasets/pointcloud/PointXR/PointXR-dataset-15' # 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
-    cfg_dir = os.path.abspath(os.path.join(dir_path, '../../cfg'))
-    codec = 'octree-liftt-ctc-lossy-geom-lossy-attrs'
-    output_dir = '/userhome/Codes/RankPCQA/PointXR15' # '/mnt/d/Downloads/PCL/Datasets/pointcloud/PointXR/PointXR-dataset-15' # 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
-
+    codec = 'octree-liftt-ctc-lossy-geom-lossy-attrs' #
     parser = ArgumentParser(description='G-PCC')
     parser.add_argument('--gpcc_bin_path', default=gpcc_bin_path, type=str,
                         help='')
     parser.add_argument('--ref_dir', default=ref_dir, type=str,
                         help='')
-    parser.add_argument('--cfg_dir', default=cfg_dir, type=str,
-                        help='')
     parser.add_argument('--codec', default=codec, type=str,
-                        help='')
-    parser.add_argument('--output_dir', default=os.path.join(output_dir, codec), type=str,
+                        help='octree-liftt-ctc-lossy-geom-lossy-attrs, \
+                              octree-liftt-ctc-lossless-geom-lossy-attrs, \
+                              octree-predt-ctc-lossless-geom-lossless-attrs, \
+                              octree-predt-ctc-lossless-geom-nearlossless-attrs')
+    parser.add_argument('--output_dir', default=ref_dir, type=str,
                         help='')
     args = parser.parse_args()
+    args.output_dir = os.path.join(args.output_dir, args.codec)
+    args.cfg_dir = os.path.join(args.output_dir, 'cfg')
+    args.output_dir = os.path.join(args.output_dir, 'output')
 
     
     # seq_15p = []
@@ -127,9 +163,22 @@ if __name__ == "__main__":
 
     seq_10 = glob(os.path.join(args.ref_dir, '*.ply'))
     g_10 = [1.0/8, 1.0/4, 1.0/2, 3.0/4, 7.0/8, 15.0/16] #
-
     
-    c = [22, 28, 34, 40, 46, 51] #
+    if 'lossless-geom' in args.codec:
+        g_10 = [1.0]
+        # g_11 = [1.0]
+        # g_12 = [1.0]
+        # g_13 = [1.0]
+        # g_14 = [1.0]
+        # g_15 = [1.0]
+
+    if 'lossy-attrs' in args.codec:
+        c = [22, 28, 34, 40, 46, 51] #
+    elif 'nearlossless-attrs' in args.codec:
+        c = [10, 16, 22, 28, 34]
+    else: # lossless-attrs
+        c = [4]
+    print(g_10, c)
 
     cmd_all = []
     # if len(seq_15p) > 0:
@@ -155,41 +204,44 @@ if __name__ == "__main__":
     print(len(seq_10))
     if len(seq_10) > 0:
         seq_10 = [os.path.split(path)[1] for path in seq_10]
-        cmd = process_one_depth(args.gpcc_bin_path, args.ref_dir, args.cfg_dir, args.output_dir, seq_10, g_10, c)
+        cmd = process_one_depth(args.codec, args.gpcc_bin_path, args.ref_dir, args.cfg_dir, args.output_dir, seq_10, g_10, c)
         cmd_all.extend(cmd) 
 
 
-    with open('run_{}_encode.sh'.format(args.codec), 'w') as f:
-        f.write('#!/bin/bash \n')
-#         threads = []
-        m = 8
-        for i, item in enumerate(cmd_all):
-            # print(item)
-            if i % m == m-1:
-                f.write('%s \n' % item)
-            else:
-                f.write('%s & \n' % item)
-#             th = threading.Thread(target=run_command, args=(item, ))
-#             th.start()
-#             threads.append(th)
+#     with open('run_{}_encode.sh'.format(args.codec), 'w') as f:
+#         f.write('#!/bin/bash \n')
+# #         threads = []
+#         m = 36
+#         for i, item in enumerate(cmd_all):
+#             # print(item)
+#             if i % m == m-1:
+#                 f.write('%s \n' % item)
+#             else:
+#                 f.write('%s & \n' % item)
+# #             th = threading.Thread(target=run_command, args=(item, ))
+# #             th.start()
+# #             threads.append(th)
         
-#         for th in threads:
-#             th.join()
+# #         for th in threads:
+# #             th.join()
             
 
-    with open('clear_{}_bin_and_log.sh'.format(args.codec), 'w') as f:
-        f.write('#!/bin/bash \n')
-        clear_cmd = "del \"{log_path}\" \"{bin_path}\"".format(log_path=os.path.join(args.output_dir, '*.log'), bin_path=os.path.join(args.output_dir, '*.bin'))
-        f.write('%s \n' % clear_cmd)
+#     with open('clear_{}_bin_and_log.sh'.format(args.codec), 'w') as f:
+#         f.write('#!/bin/bash \n')
+#         clear_cmd = "find {} -type f ! -name '*.ply' -delete".format(args.output_dir)
+#         f.write('%s \n' % clear_cmd)
     
-#     m = 36
-#     n = int(math.ceil(len(cmd_all)/m))
-#     print(n)
+    m = 36 if len(cmd_all)>36 else len(cmd_all)
+    n = int(math.ceil(len(cmd_all)/m))
+    print(m, n)
+    pool = Pool(m)
+    pool.map(func=run_command, iterable=cmd_all, chunksize=n)
 #     results = []
-#     pool = Pool(m)
-#     pool.map(func=run_command, iterable=cmd_all, chunksize=n)
-# #     for i in range(0, len(cmd_all), n):
-# #         results.append(pool.apply_async(run_command, (cmd_all[i:i+n], )))
-#     pool.close()
-#     pool.join()
+#     for i in range(0, len(cmd_all), n):
+#         results.append(pool.apply_async(run_command, (cmd_all[i:i+n], )))
+    pool.close()
+    pool.join()
+    
+    clear_cmd = "find {} -type f ! -name '*.ply' -delete".format(args.output_dir)
+    os.system(clear_cmd)
             

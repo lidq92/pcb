@@ -8,6 +8,11 @@ Date: 09/28/2021
 
 import os
 import re
+import math
+import subprocess
+import multiprocessing
+from multiprocessing import Pool
+import threading
 from glob import glob
 from argparse import ArgumentParser
 
@@ -58,7 +63,7 @@ def make_cfg(gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
         for line in rst:
             f.write("%s\n" % line)
 
-    cmd = "\"{exec_path}\" --config=\"{cfg_path}\" >> \"{log_path}\"".format(exec_path=gpcc_bin_path, cfg_path=cfg_path, log_path=log_path)
+    cmd = "{exec_path} --config={cfg_path} >> {log_path}".format(exec_path=gpcc_bin_path, cfg_path=cfg_path, log_path=log_path)
     # print(cmd)
 
     return cmd
@@ -76,10 +81,16 @@ def process_one_depth(gpcc_bin_path, ref_dir, cfg_dir, output_dir, seq, g, c):
     return cmd
 
 
+def run_command(cmds):
+    os.system(cmds)
+#     for cmd in cmds:
+#         os.system(cmd)
+    
+    
 if __name__ == "__main__":
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    gpcc_bin_path = os.path.abspath(os.path.join(dir_path, '../../mpeg-pcc-tmc13/build/tmc3/tmc3')) # '../../mpeg-pcc-tmc13/build/tmc3/Release/tmc3.exe'
+    gpcc_bin_path = os.path.abspath(os.path.join(dir_path, '../../../mpeg-pcc-tmc13/build/tmc3/tmc3')) # '../../mpeg-pcc-tmc13/build/tmc3/Release/tmc3.exe'
     ref_dir = '/userhome/Codes/RankPCQA/PointXR15' # '/mnt/d/Downloads/PCL/Datasets/pointcloud/PointXR/PointXR-dataset-15' # 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
     cfg_dir = os.path.abspath(os.path.join(dir_path, '../../cfg'))
     codec = 'octree-liftt-ctc-lossy-geom-lossy-attrs'
@@ -150,11 +161,35 @@ if __name__ == "__main__":
 
     with open('run_{}_encode.sh'.format(args.codec), 'w') as f:
         f.write('#!/bin/bash \n')
-        for item in cmd_all:
+#         threads = []
+        m = 8
+        for i, item in enumerate(cmd_all):
             # print(item)
-            f.write('%s & \n' % item)
+            if i % m == m-1:
+                f.write('%s \n' % item)
+            else:
+                f.write('%s & \n' % item)
+#             th = threading.Thread(target=run_command, args=(item, ))
+#             th.start()
+#             threads.append(th)
+        
+#         for th in threads:
+#             th.join()
+            
 
     with open('clear_{}_bin_and_log.sh'.format(args.codec), 'w') as f:
         f.write('#!/bin/bash \n')
         clear_cmd = "del \"{log_path}\" \"{bin_path}\"".format(log_path=os.path.join(args.output_dir, '*.log'), bin_path=os.path.join(args.output_dir, '*.bin'))
         f.write('%s \n' % clear_cmd)
+    
+#     m = 36
+#     n = int(math.ceil(len(cmd_all)/m))
+#     print(n)
+#     results = []
+#     pool = Pool(m)
+#     pool.map(func=run_command, iterable=cmd_all, chunksize=n)
+# #     for i in range(0, len(cmd_all), n):
+# #         results.append(pool.apply_async(run_command, (cmd_all[i:i+n], )))
+#     pool.close()
+#     pool.join()
+            

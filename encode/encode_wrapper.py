@@ -147,7 +147,7 @@ def run_command(cmds):
 if __name__ == "__main__":
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    gpcc_bin_path = os.path.abspath(os.path.join(dir_path, '../../../mpeg-pcc-tmc13/build/tmc3/tmc3')) # '../../mpeg-pcc-tmc13/build/tmc3/Release/tmc3.exe'
+    gpcc_bin_path = os.path.abspath(os.path.join(dir_path, '../mpeg-pcc-tmc13/build/tmc3/tmc3')) # '../../mpeg-pcc-tmc13/build/tmc3/Release/tmc3.exe'
     ref_dir = '/userhome/Codes/RankPCQA/PointXR15' # '/mnt/d/Downloads/PCL/Datasets/pointcloud/PointXR/PointXR-dataset-15' # 'D:\Downloads\PCL\Datasets\pointcloud\PointXR\PointXR-dataset-15'
     codec = 'octree-liftt-ctc-lossy-geom-lossy-attrs' #
     parser = ArgumentParser(description='G-PCC')

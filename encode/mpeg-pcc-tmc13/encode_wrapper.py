@@ -9,6 +9,23 @@ python encode_wrapper.py --codec octree-liftt-ctc-lossless-geom-lossy-attrs
 python encode_wrapper.py --codec octree-liftt-ctc-lossy-geom-lossy-attrs
 python encode_wrapper.py --codec octree-predt-ctc-lossless-geom-lossless-attrs
 python encode_wrapper.py --codec octree-predt-ctc-lossless-geom-nearlossless-attrs
+python encode_wrapper.py --codec octree-raht-ctc-lossless-geom-lossy-attrs
+python encode_wrapper.py --codec octree-raht-ctc-lossy-geom-lossy-attrs
+
+python encode_wrapper.py --codec predgeom-liftt-ctc-lossless-geom-lossy-attrs
+python encode_wrapper.py --codec predgeom-liftt-ctc-lossy-geom-lossy-attrs
+python encode_wrapper.py --codec predgeom-predt-ctc-lossless-geom-lossless-attrs
+python encode_wrapper.py --codec predgeom-predt-ctc-lossless-geom-nearlossless-attrs
+python encode_wrapper.py --codec predgeom-raht-ctc-lossless-geom-lossy-attrs
+python encode_wrapper.py --codec predgeom-raht-ctc-lossy-geom-lossy-attrs
+
+# Options for Trisoup are much different from the other settings, which we currently not consider.
+# inferredDirectCodingMode: 0
+# trisoupNodeSizeLog2: 5 # r01-r04 -> 5,4,3,2
+# qp: 40 # r01-r04 -> 40, 34, 28, 22
+# positionQuantizationScale: # one specific value per PC
+python encode_wrapper.py --codec trisoup-liftt-ctc-lossy-geom-lossy-attrs # TO BE ADDED
+python encode_wrapper.py --codec trisoup-raht-ctc-lossy-geom-lossy-attrs # TO BE ADDED
 '''
 
 import os
@@ -63,18 +80,22 @@ def make_cfg(codec, gpcc_bin_path, ref_path, cfg_dir, output_dir, g, c):
         rst.append('transformType: 2')
     else: # raht
         rst.append('transformType: 0')
-    rst.append('numberOfNearestNeighborsInPrediction: 3')
-    rst.append('levelOfDetailCount: 12')
     if 'predt' in codec:
+        rst.append('numberOfNearestNeighborsInPrediction: 3')
+        rst.append('levelOfDetailCount: 12')
         rst.append('intraLodPredictionSkipLayers: 0')
         if 'nearlossless-attrs' in codec:
             rst.append('interComponentPredictionEnabled: 1')
             rst.append('predWeightBlending: 1')
         else: # lossless-attrs
             rst.append('interComponentPredictionEnabled: 0')
+        rst.append('adaptivePredictionThreshold: 64')
     if 'liftt' in codec:
+        rst.append('numberOfNearestNeighborsInPrediction: 3')
+        rst.append('levelOfDetailCount: 12')
         rst.append('lodDecimator: 0')
-    rst.append('adaptivePredictionThreshold: 64')
+        rst.append('adaptivePredictionThreshold: 64')
+    
     rst.append('qp: {}'.format(c)) #
     rst.append('qpChromaOffset: 0')
     rst.append('bitdepth: 8')
